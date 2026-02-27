@@ -3,6 +3,7 @@ import requests
 version = '0.0.2'
 stable = True
 
+
 class AQIClient:
     def __init__(self) -> None:
         self.cookies = None
@@ -12,30 +13,33 @@ class AQIClient:
         r = requests.get("https://aqms.doe.ir/Home/LoadAQIMap?")
         self.cookies = r.cookies
 
-    def fetch_station(self,id: int, renew_cookies=True):
+    def fetch_station(self, id: int, renew_cookies=True):
         if renew_cookies:
             self.renew_cookies()
 
-        r = requests.get(f'https://aqms.doe.ir/Home/LoadAQIMap?id={id}', cookies=self.cookies)
+        r = requests.get(
+            f'https://aqms.doe.ir/Home/LoadAQIMap?id={id}',
+            cookies=self.cookies)
         return r.json()
-    
+
     def fetch_all_stations(self):
         D = []
         T = None
         for i in [1, 2]:
-            data = self.fetch_station(i,False)
+            data = self.fetch_station(i, False)
             T = data['T']
             D.extend(data['D'])
         return D
 
-    def fetch_all_city_stations(self, city:str, data:dict|None=None):
-        if data == None:
+    def fetch_all_city_stations(self, city: str, data: dict | None = None):
+        if data is None:
             data = self.fetch_all_stations()
-        
+
         return list(filter(lambda x: city in x['R'], data))
-    
-    def fetch_all_regions(self, date: str = "1404/12/08 11:00", type_: int = 2, session_id: str = None) -> dict:
-        
+
+    def fetch_all_regions(self, date: str = "1404/12/08 11:00",
+                          type_: int = 2, session_id: str = None) -> dict:
+
         url = "https://aqms.doe.ir/Home/GetAQIDataByRegion/"
 
         headers = {
@@ -45,7 +49,7 @@ class AQIClient:
             'Accept-Encoding': 'gzip, deflate, br, zstd',
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
             'X-Requested-With': 'XMLHttpRequest',
-            'Origin': 'https://aqms.doe.ir',  
+            'Origin': 'https://aqms.doe.ir',
             'Sec-GPC': '1',
             'Connection': 'keep-alive',
             'Sec-Fetch-Dest': 'empty',
@@ -54,39 +58,43 @@ class AQIClient:
             'TE': 'trailers',
         }
         session = requests.Session()
-        
+
         cookies = {'AspxAutoDetectCookieSupport': '1'}
         if session_id:
             cookies['ASP.NET_SessionId'] = session_id
         session.cookies.update(cookies)
 
         payload = f"Date={date.replace(' ', '+')}&type={type_}"
-        
+
         try:
             response = session.post(
-                url, 
-                headers=headers, 
-                data=payload,  
+                url,
+                headers=headers,
+                data=payload,
                 timeout=30
             )
             response.raise_for_status()
             return response.json()
-            
+
         except requests.exceptions.RequestException as e:
             return {"error": str(e)}
         except ValueError:
             return {"raw_response": response.text}
         finally:
             session.close()
-    
-    def fetch_state_aqi_data(self, state:str, data:None|dict=None, names_are_farsi=True):
+
+    def fetch_state_aqi_data(
+            self, state: str, data: None | dict = None, names_are_farsi=True):
         if not data:
             data = self.fetch_all_regions()
-        
-        return list(filter(lambda x: x['StateName_Fa' if names_are_farsi else 'StateName_En'].strip().lower() == state.strip().lower(), data['Data']))
-    
-    def fetch_city_aqi_data(self, city:str, data:None|dict=None, names_are_farsi=True):
+
+        return list(filter(lambda x: x['StateName_Fa' if names_are_farsi else 'StateName_En'].strip(
+        ).lower() == state.strip().lower(), data['Data']))
+
+    def fetch_city_aqi_data(self, city: str, data: None |
+                            dict = None, names_are_farsi=True):
         if not data:
             data = self.fetch_all_regions()
-        
-        return list(filter(lambda x: x['Region_Fa' if names_are_farsi else 'Region_En'].strip().lower() == city.strip().lower(), data['Data']))
+
+        return list(filter(lambda x: x['Region_Fa' if names_are_farsi else 'Region_En'].strip(
+        ).lower() == city.strip().lower(), data['Data']))
