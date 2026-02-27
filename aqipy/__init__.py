@@ -1,5 +1,8 @@
 import requests
 
+version = '0.0.1'
+stable = True
+
 class SyncClient:
     def __init__(self) -> None:
         self.cookies = None

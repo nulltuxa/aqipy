@@ -1,5 +1,5 @@
 [project]
-name = "aqi-py"
+name = "aqipy"
 version = "0.0.1"
 authors = [
     { name = "Ali Safamanesh", email = "daradege@proton.me" },
