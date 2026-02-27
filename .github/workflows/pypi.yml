@@ -19,6 +19,7 @@ jobs:
     - name: Extract version info
       id: version
       run: |
+        pip install requests
         STABLE=$(python -c "from aqipy import stable; print(str(stable).lower())")
         VERSION=$(python -c "from aqipy import version; print(version)")
         echo "stable=$STABLE" >> $GITHUB_OUTPUT
