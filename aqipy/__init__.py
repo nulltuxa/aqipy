@@ -1,9 +1,5 @@
 import requests
 
-version = '0.0.2'
-stable = True
-
-
 class AQIClient:
     def __init__(self) -> None:
         self.cookies = None
